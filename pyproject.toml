@@ -1,18 +1,25 @@
 [tool.poetry]
-name = "assignment2"
+name = "morning_greetings"
 version = "0.1.0"
-description = "ACIT4420-1 24H Assignment II: Files I/O, modules and packages"
-authors = ["Ruby Jane Cabagnot"]
+description = "A package for generating and sending morning greetings"
+authors = ["Ruby Jane Cabagnot <rucab3109@oslomet.no>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
-requests = "^2.32.3"
-schedule = "^1.2.2"
-logging = "^0.4.9.6"
-pytz = "^2024.2"
+python = "^3.6"
+python-dotenv = "*"
+schedule = "*"
+pytz = "*"
 
+[tool.poetry.dev-dependencies]
+pytest = "*"
+black = "*"
+flake8 = "*"
+mypy = "*"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+morning_greetings = "morning_greetings.main:main"

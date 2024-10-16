@@ -2,7 +2,6 @@ import logging
 import os
 import time
 import sys
-import datetime
 from typing import List
 from dataclasses import dataclass
 
@@ -43,36 +42,56 @@ class Application:
             except Exception as e:
                 self.logger.error(f"Error sending to {contact['name']}: {str(e)}")
 
-def run_scheduled_task():
-    print(f"Running scheduled task at {datetime.datetime.now()}")
-    app.send_daily_morning_greetings()
-    print("Scheduled task completed")
+def setup_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler("application.log"),
+            logging.StreamHandler()
+        ]
+    )
+
+def run_scheduled_task(app):
+    logging.info("Running scheduled task")
+    try:
+        app.send_daily_morning_greetings()
+        logging.info("Scheduled task completed successfully")
+    except Exception as e:
+        logging.error(f"Error in scheduled task: {str(e)}")
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    setup_logging()
     
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    csv_path = os.path.join(current_dir, "contacts.csv")
-    
-    print(f"Current working directory: {os.getcwd()}")
-    print(f"Full path to CSV file: {csv_path}")
-    print(f"Does file exist? {os.path.exists(csv_path)}")
-    
-    config = Config(csv_path=csv_path, schedule_time="08:00")  # Changed to a time a few minutes from now for testing
-    app = Application(config, ContactManager(), MessageGenerator("Good Morning"), MessageSender())
-    
-    if len(sys.argv) > 1 and sys.argv[1] == "manual":
-        print("Manual trigger activated. Sending greetings now...")
-        app.send_daily_morning_greetings()
-    else:
-        print(f"Automatic mode. Scheduled to run daily at {config.schedule_time}")
-        schedule.every().day.at(config.schedule_time).do(run_scheduled_task)
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        csv_path = os.path.join(current_dir, "contacts.csv")
         
-        try:
-            while True:
-                schedule.run_pending()
-                time.sleep(60)
-                print(f"Waiting for scheduled time. Current time: {datetime.datetime.now().strftime('%H:%M')}")
-        except KeyboardInterrupt:
-            print("\nProgram terminated by user.")
+        if not os.path.exists(csv_path):
+            raise FileNotFoundError(f"Contacts file not found: {csv_path}")
+        
+        config = Config(csv_path=csv_path, schedule_time="08:00")
+        app = Application(config, ContactManager(), MessageGenerator("Good Morning"), MessageSender())
+        
+        if len(sys.argv) > 1 and sys.argv[1] == "manual":
+            logging.info("Manual trigger activated. Sending greetings now...")
+            run_scheduled_task(app)
+        else:
+            logging.info(f"Automatic mode. Scheduled to run daily at {config.schedule_time}")
+            schedule.every().day.at(config.schedule_time).do(run_scheduled_task, app)
+            
+            try:
+                while True:
+                    schedule.run_pending()
+                    time.sleep(60)
+            except KeyboardInterrupt:
+                logging.info("Program terminated by user.")
+    
+    except FileNotFoundError as e:
+        logging.error(f"File error: {str(e)}")
+    except ConnectionError as e:
+        logging.error(f"Network error: {str(e)}")
+    except Exception as e:
+        logging.error(f"Unexpected error: {str(e)}")
+    finally:
+        logging.info("Application shutting down.")
