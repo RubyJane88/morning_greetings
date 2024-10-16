@@ -1,6 +1,13 @@
-class ContactsManager:
+import csv
+
+class ContactManager:
     def __init__(self):
         self.contacts = []
+        
+    def load_contacts(self, file_path: str) -> None:
+        with open(file_path, 'r') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            self.contacts = list(csv_reader)
 
     def add_contact(self, name: str, email: str, preferred_time: str = "08:00"):
         contact = {
