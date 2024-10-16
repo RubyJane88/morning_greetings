@@ -1,0 +1,4 @@
+2024-10-16 15:49:54,160 - INFO - MessageGenerator initialized with greeting: 'Good Morning'
+2024-10-16 15:49:54,160 - INFO - Automatic mode. Scheduled to run daily at 08:00
+2024-10-16 15:56:55,993 - INFO - Program terminated by user.
+2024-10-16 15:56:55,994 - INFO - Application shutting down.

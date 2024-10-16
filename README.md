@@ -4,7 +4,7 @@ This Python application sends personalized morning greetings to a list of contac
 
 ## Setup
 
-1. Ensure you have Python 3.7+ and Poetry installed on your system.
+1. Ensure you have Python 3.8+ and Poetry installed on your system.
 
 2. Clone the repository and navigate to the project directory.
 

@@ -7,9 +7,9 @@ from dataclasses import dataclass
 
 import schedule
 
-from contact_manager import ContactManager
-from message_generator import MessageGenerator
-from message_sender import MessageSender
+from .contact_manager import ContactManager
+from .message_generator import MessageGenerator
+from .message_sender import MessageSender
 
 @dataclass
 class Config:
@@ -100,5 +100,5 @@ def main():
     finally:
         logging.info("Application shutting down.")
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
     main()
