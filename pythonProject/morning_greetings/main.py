@@ -60,33 +60,37 @@ def run_scheduled_task(app):
     except Exception as e:
         logging.error(f"Error in scheduled task: {str(e)}")
 
-if __name__ == "__main__":
+def setup_application():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(current_dir, "contacts.csv")
+    
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"Contacts file not found: {csv_path}")
+    
+    config = Config(csv_path=csv_path, schedule_time="08:00")
+    return Application(config, ContactManager(), MessageGenerator("Good Morning"), MessageSender())
+
+def run_application(app):
+    if len(sys.argv) > 1 and sys.argv[1] == "manual":
+        logging.info("Manual trigger activated. Sending greetings now...")
+        run_scheduled_task(app)
+    else:
+        logging.info(f"Automatic mode. Scheduled to run daily at {app.config.schedule_time}")
+        schedule.every().day.at(app.config.schedule_time).do(run_scheduled_task, app)
+        
+        try:
+            while True:
+                schedule.run_pending()
+                time.sleep(60)
+        except KeyboardInterrupt:
+            logging.info("Program terminated by user.")
+
+def main():
     setup_logging()
     
     try:
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        csv_path = os.path.join(current_dir, "contacts.csv")
-        
-        if not os.path.exists(csv_path):
-            raise FileNotFoundError(f"Contacts file not found: {csv_path}")
-        
-        config = Config(csv_path=csv_path, schedule_time="08:00")
-        app = Application(config, ContactManager(), MessageGenerator("Good Morning"), MessageSender())
-        
-        if len(sys.argv) > 1 and sys.argv[1] == "manual":
-            logging.info("Manual trigger activated. Sending greetings now...")
-            run_scheduled_task(app)
-        else:
-            logging.info(f"Automatic mode. Scheduled to run daily at {config.schedule_time}")
-            schedule.every().day.at(config.schedule_time).do(run_scheduled_task, app)
-            
-            try:
-                while True:
-                    schedule.run_pending()
-                    time.sleep(60)
-            except KeyboardInterrupt:
-                logging.info("Program terminated by user.")
-    
+        app = setup_application()
+        run_application(app)
     except FileNotFoundError as e:
         logging.error(f"File error: {str(e)}")
     except ConnectionError as e:
@@ -95,3 +99,6 @@ if __name__ == "__main__":
         logging.error(f"Unexpected error: {str(e)}")
     finally:
         logging.info("Application shutting down.")
+
+if __name__ == "__main__":
+    main()
